@@ -1,5 +1,6 @@
-## 크롬 버전 확인: chrome://version/ (주소창에 입력)   
-### 크롬 드라이버 다운로드 **크롬이랑 같은 버전이여야함**: http://chromedriver.storage.googleapis.com/index.html
+## 크롬드라이버 설치 필수
+ 크롬 버전 확인: chrome://version/ (주소창에 입력)   
+ 크롬 드라이버 다운로드 **크롬이랑 같은 버전이여야함**: http://chromedriver.storage.googleapis.com/index.html
    
 ## GUI프로그램           
  첫 실행시 권한 허락후 강제 종료(Ctrl+c or 작업관리자)    
