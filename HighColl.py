@@ -7,18 +7,20 @@ import time
 import re
 #--------------------------
 streamer=''             #twitch id
-cf=0                   #combineflag
 pf=1                    #printflag
+game=0                  #0모두 1해당게임만 2해당게임 제외
+game_name=''
+cf=1                    #combineflag
 ascsort=1               #ascending sort 오름차순
 top=10                  #영상수
-transition=0            #장면전환
-intro=0                 #인트로
-outtro=0                #아웃트로
+transition=1            #장면전환
+intro=1                 #인트로
+outtro= 1               #아웃트로
 #--------------------------
 st=3 #sleeptime
 sourcehtml=[]
 sourcetitle=[]
-
+sourcegamelist=[]
 #chromedriver
 url='https://www.twitch.tv/'+streamer+'/clips?filter=clips&range=7d'
 options = webdriver.ChromeOptions()
@@ -35,19 +37,33 @@ req = driver.page_source
 resource=BeautifulSoup(req, 'html.parser')
 i=0
 for anchor in resource.find_all('a', class_="tw-full-width tw-interactive tw-link tw-link--hover-underline-none tw-link--inherit"):
-    sourcehtml.insert(i,anchor.get('href', '/'))
+    sourcehtml.append(anchor.get('href', '/'))
     i+=1
 for title in resource.find_all('h3', class_="tw-ellipsis tw-font-size-5"):
-    sourcetitle.insert(i,title.get_text())
+    sourcetitle.append(title.get_text())
+for htmlgame in resource.find_all('div',attrs={"class":"tw-aspect tw-aspect--align-center"}):
+     for htmlgame2 in htmlgame.find_all('img',attrs={"class":"tw-image"}):
+        sourcegamelist.append(htmlgame2.get('alt'))
 j=0
 for j in range(len(sourcetitle)):
     sourcetitle[j] = re.sub('[^0-9a-zA-Zㄱ-힗]', '', sourcetitle[j])
+driver.quit()
 
-if pf:
-    print('클립주소: ')
-    print(sourcehtml)
-    print('클립이름: ')
-    print(sourcetitle)
+#게임정리
+if game==1:
+    for i in reversed(range(len(sourcegamelist))):
+        if sourcegamelist[i]!=game_name:
+            del sourcegamelist[i]
+            del sourcehtml[i]
+            del sourcetitle[i]
+if game==2:
+     for i in reversed(range(len(sourcegamelist))):
+        if sourcegamelist[i]==game_name:
+            del sourcegamelist[i]
+            del sourcehtml[i]
+            del sourcetitle[i]
+i=len(sourcehtml)
+#출력
 if i==0:
     if pf:
         print('클립이 없음')
@@ -57,11 +73,17 @@ if i<top:
     top=i
     if pf:
         print(str(i)+'개의 클립')
-
-i=0
-driver.quit()
+if pf:
+    print('클립주소: '+str(len(sourcehtml)))
+    print(sourcehtml)
+    print('클립이름: '+str(len(sourcetitle)))
+    print(sourcetitle)
+    if game!=0:
+        print('게임:'+str(len(sourcegamelist)))
+        print(sourcegamelist)
 
 #download clip
+i=0
 for i in range(top):
     if pf:
         print(str(i+1)+'번째 다운로드 시작')
@@ -85,12 +107,12 @@ for i in range(top):
 
 #클립합치기
 if cf:
-    print('영상 합치는중...')
+    if pf:
+        print('영상 합치는중...')
     clip=[]
     i=0
     for i in range(top):
         clip.append(VideoFileClip('clips/'+str(i)+'.mp4'))
-        print(str(i+1)+'번째 합치는중')
     if ascsort:
         clip.reverse()
     if transition:
